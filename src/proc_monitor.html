@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proc Monitor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+</head>
+<body>
+    <h1>Proc Monitor</h1>
+    <div>
+        Monitoring: <code> << cmd_args << </code>
+    </div>
+    <div class="stack_graph">
+            <canvas id="StackGraph" width=360 height=180></canvas>
+        </div>
+    <div class="heap_graph">
+        <canvas id="HeapGraph" width=360 height=180></canvas>
+    </div>
+    <div>
+        Stack Usage: <code id="stack_indicator">0</code>
+    </div>
+    <div>
+        Heap Usage: <code id="heap_indicator">0</code>
+    </div>
+    <script>
+
+        let stack_graph, heap_graph;
+        let time = [];
+        let stack_y = [];
+        let heap_y = [];
+        let t0 = 0; // First timestamp
+        function getData() {
+            const url = 'http://localhost:8080/proc_monitor/data';
+            fetch(url)
+                .then(response => response.json())
+                .then(json => {
+                    console.log(json);
+                    if (t0 === 0) {
+                        t0 = json["time"];
+                    }
+                    time.push(json["time"] - t0);
+                    if (stack_graph) {
+                        stack_graph.destroy()
+                    }
+                    stack_graph = generate_stack_graph(json)
+                    if (heap_graph) {
+                        heap_graph.destroy()
+                        // freq_chart.width = "400px"
+                    }
+                    heap_graph = generate_heap_graph(json)
+                })
+        }
+        function generate_stack_graph(json) {
+            const decimals = 2;
+            // Chart.defaults.global.defaultFontColor = "#FFF";
+            stack_y.push(json["stack_y"])
+            document.getElementById("stack_indicator").innerText = json["stack_y"];
+            return new Chart("StackGraph", {
+                type: "line",
+                data: {
+                    labels: time,
+                    datasets: [{
+                        backgroundColor: 'rgba(0, 169, 0, 0.25)',
+                        borderColor: 'rgba(0, 255, 0, 0.5)',
+                        data: stack_y,
+                        borderWidth: 2,
+                        borderRadius: 2,
+                    }]
+                },
+                options: {
+                    animation: {
+                        duration: 0
+                    },
+                    legend: {display: false},
+                    title: {
+                        display: true,
+                        text: "Stack Usage"
+                    },
+                    responsive: false,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                fontSize: 9
+                            },
+                            gridLines: {
+                                display: false,
+                                color: "#949494"
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "Time (s)"
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value, index, values) {
+                                    return value.toFixed(decimals) + " bytes";
+                                }
+                            },
+                            gridLines: {
+                                display: true,
+                                color: "#949494"
+                            },
+                        }]
+                    }
+                }
+            });
+        }
+
+        function generate_heap_graph(json) {
+            const decimals = 2;
+            // Chart.defaults.global.defaultFontColor = "#FFF";
+            heap_y.push(json["heap_y"])
+            document.getElementById("heap_indicator").innerText = json["heap_y"];
+            return new Chart("HeapGraph", {
+                type: "line",
+                data: {
+                    labels: time,
+                    datasets: [{
+                        backgroundColor: 'rgba(169, 0, 0, 0.25)',
+                        borderColor: 'rgba(255, 0, 0, 0.5)',
+                        data: heap_y,
+                        borderWidth: 2,
+                        borderRadius: 2,
+                    }]
+                },
+                options: {
+                    animation: {
+                        duration: 0
+                    },
+                    legend: {display: false},
+                    title: {
+                        display: true,
+                        text: "Heap Usage"
+                    },
+                    responsive: false,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                fontSize: 9
+                            },
+                            gridLines: {
+                                display: false,
+                                color: "#949494"
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "Time (s)"
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value, index, values) {
+                                    return value.toFixed(decimals) + " bytes";
+                                }
+                            },
+                            gridLines: {
+                                display: true,
+                                color: "#949494"
+                            },
+                        }]
+                    }
+                }
+            });
+        }
+        const interval = setInterval(getData, 1000);
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ A wrapper program to monitor the stack/heap usage of a program, command, or proc
 Usage
 ---------------------------
 
-`./proc_monitor [-p | -g] [Command PID]`
+`./proc_monitor [-p | -g] [Command | PID]`
 - `-p`:
   - If present, the subsequent argument is treated as the PID to be monitored.
   - Otherwise, the subsequent arguments are treated as a command, the launched program/command will be run and monitored.
@@ -20,9 +20,9 @@ If stdout is able to be captured (from a command or program), it will be display
 Dependencies
 ---------------------------
 - System:
-  - Debian Linux (May be able to modify CMakeLists.txt and boost package configuration for other distros/OSs)
+  - Debian Linux (May be able to modify CMakeLists.txt and Boost package configuration for other distros/OSs)
   - Support for UTF-8 characters within console
-  - CMake 
+  - CMake >= 3.5
   - C++14 compiler
 
 - Packages:
